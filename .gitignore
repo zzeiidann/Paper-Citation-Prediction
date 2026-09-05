@@ -1,0 +1,12 @@
+.DS_Store
+.ipynb_checkpoints/
+__pycache__/
+
+# Local competition data and generated artifacts
+data/
+datasets/
+models/
+outputs/
+*.model
+*.pkl
+submission*.csv
