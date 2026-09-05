@@ -1,35 +1,38 @@
-# Manusia Pojok
+# Scientific Paper Citation Link Prediction
 
-**Finalist — GammaFest Data Science Competition 2025, Institut Pertanian Bogor (IPB)**
+**Python · PyTorch · Hugging Face Transformers · SPECTER · Doc2Vec · FastText · CatBoost**
 
-Manusia Pojok is a machine-learning approach for predicting whether one scientific paper references another. The project turns pairs of papers into semantic, vector, temporal, citation, and metadata features, then performs binary classification with CatBoost.
+An NLP and machine-learning pipeline for predicting whether one scientific paper cites another. Built for the **GammaFest Data Science Competition 2025 at Institut Pertanian Bogor (IPB)**, where the finalist team competed under the name **Manusia Pojok**.
 
-> The final private leaderboard placed **Manusia Pojok 4th** with an MCC of **0.5688**. The accompanying report rounds its best result to 0.568. These are reported competition results, not a fresh reproduction from the files in this repository.
+The pipeline models **410K+ paper-reference pairs** by combining full text, titles, concepts, authors, publication attributes, and citation metadata. Its final CatBoost experiment achieved **0.5842 validation MCC** after oversampling and MCC-based decision-threshold optimization. The final private leaderboard placed Manusia Pojok **4th with 0.5688 MCC**.
 
 [Read the project story and retrospective on LinkedIn](https://www.linkedin.com/posts/raffyzeidan_this-post-is-mainly-here-as-a-reference-for-ugcPost-7496932806653194241-q6xp/)
 
 ## Problem
 
-Finding relevant academic references is difficult when a literature collection becomes large. The GammaFest task framed this as imbalanced binary classification: given a source paper and a candidate reference paper, predict whether a citation relationship exists. Submissions were evaluated with MCC.
+Finding relevant academic references is difficult when a literature collection becomes large. The task is framed as imbalanced binary classification: given a source paper and a candidate reference paper, predict whether a citation link exists. Submissions were evaluated with Matthews Correlation Coefficient (MCC), which is suitable for imbalanced labels.
+
+The data contains 4,354 scientific papers and more than 410,000 labeled paper-reference pairs. Each paper may contribute full text, title, concepts, authors, publication information, and citation statistics.
 
 ## Approach
 
 <p align="center">
-  <img src="assets/methodology.jpg" alt="Manusia Pojok methodology: Doc2Vec, FastText, SPECTER, pairwise vector features, metadata features, and a tree-based model" width="760">
+  <img src="assets/methodology.jpg" alt="Scientific paper citation prediction methodology: Doc2Vec, FastText, SPECTER, pairwise vector features, metadata features, and a tree-based model" width="760">
 </p>
 
 <p align="center"><em>Original problem-solving architecture shared in the project’s LinkedIn retrospective.</em></p>
 
-The original deep-learning-heavy direction was constrained by GPU memory and a roughly ten-day competition window. The final solution instead combined:
+The original deep-learning-heavy direction was constrained by GPU memory and a roughly ten-day competition window. The final hybrid solution combined:
 
-- **Doc2Vec** embeddings for full paper text, selected as a computationally efficient representation for long documents.
-- **FastText** and **AllenAI SPECTER** embeddings for titles and concepts.
-- Pairwise cosine, Euclidean, Manhattan, correlation, angular, projection, difference, and aggregate vector features.
-- Temporal, citation, and other metadata-derived features.
-- Random oversampling followed by a GPU-trained **CatBoost** classifier.
-- Threshold selection using validation MCC.
+- **Full-text representation:** Doc2Vec context vectors for long papers, selected for their lower compute cost and lack of a short transformer context limit.
+- **Title and concept representation:** FastText plus the domain-specific `allenai/specter` transformer through Hugging Face and PyTorch.
+- **Pairwise semantic relevance:** cosine similarity, Euclidean and Manhattan distance, Pearson correlation, angular relationships, directional projections, vector differences, and aggregate statistics.
+- **Structured signals:** author, publication, temporal, citation, popularity, and other metadata-derived features.
+- **Final feature space:** approximately 258 engineered features describing the relationship between each source and candidate reference paper.
+- **Imbalanced classification:** random oversampling followed by a GPU-trained CatBoost classifier.
+- **Decision optimization:** probability-threshold search using validation MCC rather than assuming a fixed 0.5 cutoff.
 
-The report compares several iterations. Its strongest listed configuration combines Doc2Vec, FastText, SPECTER, engineered metadata, and pairwise embedding features with tuned CatBoost.
+Several tree-based and neural classifiers were explored. The final pipeline used CatBoost after feature and model comparisons showed that Doc2Vec relationships and temporal features were among the strongest signals.
 
 ## Repository contents
 
@@ -63,7 +66,14 @@ To reproduce it:
 
 The notebook downloads the `allenai/specter` checkpoint and NLTK resources at runtime. Exact reproducibility also depends on access to the original GammaFest data, which is not redistributed here.
 
-## Reported model progression
+## Results
+
+| Evaluation | MCC | Notes |
+| --- | ---: | --- |
+| Notebook validation split | **0.5842** | Best threshold: 0.1189; recorded directly in the committed notebook output. |
+| Final private leaderboard | **0.5688** | 4th place, shown in the competition leaderboard image below. |
+
+The report also documents the following model progression:
 
 | Configuration | Reported MCC |
 | --- | ---: |
@@ -75,7 +85,7 @@ The notebook downloads the `allenai/specter` checkpoint and NLTK resources at ru
 | CatBoost + Doc2Vec + FastText + SPECTER + engineered pairwise features | 0.540 |
 | Tuned CatBoost with the full feature set | **0.568** |
 
-These numbers are transcribed from the submitted report and should be interpreted within the original competition split and evaluation setup.
+The progression numbers are transcribed from the submitted report. Validation and leaderboard MCC are reported separately because they come from different data partitions and should not be treated as interchangeable.
 
 <p align="center">
   <img src="assets/leaderboard.jpg" alt="GammaFest IPB 2025 private leaderboard showing Manusia Pojok in fourth place with a score of 0.5688" width="760">
@@ -99,4 +109,4 @@ These numbers are transcribed from the submitted report and should be interprete
 
 ## Acknowledgements
 
-Developed for the **GammaFest Data Science Competition 2025** organized by Institut Pertanian Bogor (IPB). The original project files were migrated from the author's consolidated competition repository while preserving their Git history.
+Developed by team **Manusia Pojok** for the **GammaFest Data Science Competition 2025** organized by Institut Pertanian Bogor (IPB). The original project files were migrated from the author's consolidated competition repository while preserving their Git history.
