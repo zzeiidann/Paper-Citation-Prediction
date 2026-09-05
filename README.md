@@ -1,4 +1,4 @@
-# Scientific Paper Citation Link Prediction
+# Paper Citation Prediction
 
 **Python · PyTorch · Hugging Face Transformers · SPECTER · Doc2Vec · FastText · CatBoost**
 
